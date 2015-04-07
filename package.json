@@ -1,0 +1,20 @@
+{
+  "name": "ethsset",
+  "version": "1.0.0",
+  "description": "Node.js based Asset Pipeline",
+  "main": "ethsset.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ethsset.js"
+  },
+  "keywords": [
+    "games",
+    "assets",
+    "pipeline"
+  ],
+  "author": "Sebastian Krause (http://flowerpickinggiants.de)",
+  "license": "MIT",
+  "dependencies": {
+    "ninja-build-gen": "^0.1.3"
+  }
+}
