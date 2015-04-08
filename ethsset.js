@@ -2,7 +2,7 @@
 (function() {
   var Edges, Rules, edge, ethssetConfig, exec, ninja, ninjaBuildGen, puts, rule, sys, _i, _j, _len, _len1;
 
-  ethssetConfig = require('./ethsset.json');
+  ethssetConfig = require(process.cwd() + '/ethsset.json');
 
   ninjaBuildGen = require('ninja-build-gen');
 

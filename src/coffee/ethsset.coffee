@@ -1,5 +1,5 @@
 # Configuration file
-ethssetConfig = require './ethsset.json'
+ethssetConfig = require process.cwd() + '/ethsset.json'
 
 # Ninja
 ninjaBuildGen = require 'ninja-build-gen'
