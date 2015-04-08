@@ -1,65 +1,38 @@
-ethssetConfig = require('./ethsset.json');
-ninjaBuildGen = require('ninja-build-gen');
-ninja = ninjaBuildGen('1.5.3', 'ethsset_build');
+# Configuration file
+ethssetConfig = require('./ethsset.json')
+
+# Ninja
+ninjaBuildGen = require('ninja-build-gen')
+ninja = ninjaBuildGen('1.5.3', 'ethsset_build')
+
+# Exec
+sys = require('sys')
+exec = require('child_process').exec
 
 Rules = ethssetConfig.rules;
-console.log(Rules);
-
-i;
-for rule of Rules
-    ninja
-        .rule(Rules[i].rule)
-        .run(Rules[i].cmd)
-        .description(Rules[i].desc);
-
-###
-for(i = 0; i<Rules.length;++i)
-{
-    if(Rules[i].hasOwnProperty('rule'))
-    {
-        ninja
-            .rule(Rules[i].rule)
-            .run(Rules[i].cmd)
-            .description(Rules[i].desc);
-    }
-}
-###
-
 Edges = ethssetConfig.edges;
-console.log(Edges);
-###
-for(i = 0; i<Edges.length;++i)
-{
-    if(Edges[i].hasOwnProperty('from')
-        && Edges[i].hasOwnProperty('to')
-        && Edges[i].hasOwnProperty('using'))
-    {
-        ninja
-            .edge(Edges[i].to)
-            .from(Edges[i].from)
-            .using(Edges[i].using);
-    }
-}
-###
-###
-ninja
-    .edge('./out/hello.txt')
-    .from('hello.txt')
-    .using('copy');
-###
 
-console.log(ninja);
+console.log('Rules: ', Rules);
+console.log('Edges: ', Edges);
 
-###
-ninja
-    .rule('copy')
-    .run('cp $in $out')
-    .description('Copy $in to $out');
+for rule in Rules
+    ninja
+        .rule(rule.rule)
+        .run(rule.cmd)
+        .description(rule.desc) if rule.rule? and rule.cmd? and rule.desc?
 
 
-###
+for edge in Edges
+    ninja
+        .edge(edge.to)
+        .from(edge.from)
+        .using(edge.using) if edge.to? and edge.from? and edge.using?
+
+console.log('ninja.build: ', ninja);
 
 ninja.save('build.ninja');
 
-
+# Running Ninja in current directory
+puts = (error, stdout, stderr) -> console.log(stdout)
+exec('ninja', puts)
 
