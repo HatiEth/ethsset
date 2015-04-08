@@ -1,6 +1,6 @@
 {
   "name": "ethsset",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Node.js based Asset Pipeline",
   "main": "ethsset",
   "scripts": {
@@ -24,6 +24,6 @@
     "url": "https://github.com/HatiEth/ethsset"
   },
   "bin": {
-      "ethsset": "ethsset.js"
+    "ethsset": "ethsset.js"
   }
 }
