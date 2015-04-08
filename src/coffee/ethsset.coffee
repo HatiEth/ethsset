@@ -1,9 +1,9 @@
 # Configuration file
-ethssetConfig = require('./ethsset.json')
+ethssetConfig = require './ethsset.json'
 
 # Ninja
-ninjaBuildGen = require('ninja-build-gen')
-ninja = ninjaBuildGen('1.5.3', 'ethsset_build')
+ninjaBuildGen = require 'ninja-build-gen'
+ninja = ninjaBuildGen '1.5.3', 'ethsset_build'
 
 # Exec
 sys = require('sys')

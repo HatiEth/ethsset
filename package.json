@@ -5,7 +5,8 @@
   "main": "ethsset",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ethsset.js"
+    "start": "node bin/execute.js",
+    "prepublish": "cp .gitignore .npmignore"
   },
   "keywords": [
     "games",
@@ -24,6 +25,6 @@
     "url": "https://github.com/HatiEth/ethsset"
   },
   "bin": {
-    "ethsset": "ethsset.js"
+    "ethsset": "bin/execute.js"
   }
 }
