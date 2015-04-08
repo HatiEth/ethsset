@@ -15,6 +15,8 @@
   "author": "Sebastian Krause (http://flowerpickinggiants.de)",
   "license": "MIT",
   "dependencies": {
+    "glob": "^5.0.3",
+    "globule": "^0.2.0",
     "ninja-build-gen": "^0.1.3"
   }
 }

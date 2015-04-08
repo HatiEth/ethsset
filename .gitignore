@@ -1,3 +1,16 @@
+# Sublime Text 3
+*.sublime-*
+
+# Local Files
+compile.sh
+tests/
+
+
+# Generated Files
+*.js
+
+
+
 # Created by https://www.gitignore.io
 
 #!! ERROR: n is undefined. Use list command to see defined gitignore types !!#
