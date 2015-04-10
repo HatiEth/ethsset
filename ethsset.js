@@ -1,6 +1,4 @@
 /// <reference path="node.d.ts" />
-;
-;
 var ConfigFilePath = process.cwd() + '/ethsset.json';
 var fs = require('fs');
 var Util = require('util');
@@ -8,19 +6,22 @@ var NinjaGen = require('ninja-build-gen');
 if (!fs.existsSync(ConfigFilePath)) {
     console.log('Creating default ethsset.json');
     var Config = {
-        ninja: {
-            version: '1.5.3'
-        },
         rules: [],
-        edges: []
+        edges: [],
+        globedges: []
     };
     fs.writeFileSync(ConfigFilePath, JSON.stringify(Config, null, 4));
 }
 var EthssetConfig = require(ConfigFilePath);
 var Ninja = NinjaGen(EthssetConfig.ninja.version, EthssetConfig.ninja.buildpath || 'ethsset_build');
+var globule = require('globule');
 var sys = require('sys');
 var exec = require('child_process').exec;
-function generateNinjaBuild(Rules, Edges) {
+function generateNinjaBuild(EthssetConfig) {
+    var Rules, Edges, GlobEdge;
+    Rules = EthssetConfig.rules || [];
+    Edges = EthssetConfig.edges || [];
+    GlobEdge = EthssetConfig.globedges || [];
     Rules.forEach(function (Rule) {
         if (Rule.rule != null && Rule.cmd != null) {
             Ninja
@@ -40,9 +41,19 @@ function generateNinjaBuild(Rules, Edges) {
             console.log('Invalid edge ', Edge, ' requires "to", "from" and "using"');
         }
     });
+    GlobEdge.forEach(function (GlobEdge) {
+        var GlobOptions = {
+            srcBase: GlobEdge.srcBase || '',
+            destBase: GlobEdge.destBase || '',
+            flatten: GlobEdge.flatten || false
+        };
+        console.log(GlobEdge, "::", GlobOptions);
+        var GlobResult = globule.findMapping(GlobEdge.pattern, GlobOptions);
+        console.log(GlobResult);
+    });
     Ninja.save('build.ninja');
 }
-generateNinjaBuild(EthssetConfig.rules, EthssetConfig.edges);
+generateNinjaBuild(EthssetConfig);
 console.log(Ninja);
 function executeNinjaBuild(BuildFilePath) {
     if (BuildFilePath === void 0) { BuildFilePath = 'build.ninja'; }
@@ -52,3 +63,6 @@ function executeNinjaBuild(BuildFilePath) {
     exec(Util.format('ninja -f %s', BuildFilePath), puts);
 }
 executeNinjaBuild(EthssetConfig.ninja.buildfile);
+// Exports 
+exports.executeNinjaBuild = executeNinjaBuild;
+exports.generateNinjaBuild = generateNinjaBuild;
