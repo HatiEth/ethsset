@@ -60,7 +60,16 @@ if(!fs.existsSync(ConfigFilePath))
 }
 
 var EthssetConfig: config_desc = require(ConfigFilePath);
-var Ninja = NinjaGen(EthssetConfig.ninja.version, EthssetConfig.ninja.buildpath || 'ethsset_build');
+
+var Ninja;
+if(EthssetConfig.ninja === void 0) 
+{
+    Ninja = NinjaGen(undefined, 'ethsset_build');
+}
+else
+{
+    Ninja = NinjaGen(EthssetConfig.ninja.version, EthssetConfig.ninja.buildpath || 'ethsset_build');
+}
 
 var globule = require('globule');
 var sys = require('sys');

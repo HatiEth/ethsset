@@ -17,7 +17,13 @@ if (!fs.existsSync(ConfigFilePath)) {
     fs.writeFileSync(ConfigFilePath, JSON.stringify(Config, null, 4));
 }
 var EthssetConfig = require(ConfigFilePath);
-var Ninja = NinjaGen(EthssetConfig.ninja.version, EthssetConfig.ninja.buildpath || 'ethsset_build');
+var Ninja;
+if (EthssetConfig.ninja === void 0) {
+    Ninja = NinjaGen(undefined, 'ethsset_build');
+}
+else {
+    Ninja = NinjaGen(EthssetConfig.ninja.version, EthssetConfig.ninja.buildpath || 'ethsset_build');
+}
 var globule = require('globule');
 var sys = require('sys');
 var exec = require('child_process').exec;

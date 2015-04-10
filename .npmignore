@@ -3,11 +3,11 @@ ethsset.json
 
 # Sublime Text 3
 *.sublime-*
+tsconfig.json
 
 # Local Files
 compile.sh
 tests/
-
 
 # Generated Files
 
