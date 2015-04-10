@@ -1,7 +1,7 @@
 /// <reference path="node.d.ts" />
 
 interface rule {
-    rule: string;
+    name: string;
     cmd: string;
     desc?: string;
 }
@@ -9,17 +9,21 @@ interface rule {
 interface edge {
     to: string;
     from: string;
-    using: string;
-
+    rule: string;
     active?: boolean;
 }
 
 interface glob_edge {
     pattern: string;
-
+    rule: string;
     srcBase?: string;
     destBase?: string;
     flatten?: boolean;
+}
+
+interface glob_mapping {
+    src: string[];
+    dest: string;
 }
 
 interface config_desc {
@@ -33,6 +37,11 @@ interface config_desc {
     globedges?: glob_edge[];
 }
 
+var IsDryMode: boolean = (process.argv.splice(2)[0] === 'test');
+if(IsDryMode)
+{
+    console.log("Running ethsset in test mode");
+}
 var ConfigFilePath: string = process.cwd() + '/ethsset.json';
 var fs = require('fs');
 var Util = require('util');
@@ -65,27 +74,27 @@ function generateNinjaBuild(EthssetConfig: config_desc)
     GlobEdge = EthssetConfig.globedges || [];
 
     Rules.forEach(function(Rule: rule) {
-        if(Rule.rule != null && Rule.cmd != null)
+        if(Rule.name != null && Rule.cmd != null)
         {
             Ninja
-                .rule(Rule.rule)
+                .rule(Rule.name)
                 .run(Rule.cmd)
-                .description(Rule.desc || ('['+Rule.rule+'] ' + Rule.cmd));
+                .description(Rule.desc || ('['+Rule.name+'] ' + Rule.cmd));
         }
         else
         {
-            console.log('Invalid rule ', Rule, ' requires "rule" and "cmd"')
+            console.log('Invalid rule ', Rule, ' requires "name" and "cmd"')
         }
     });
 
     Edges.forEach(function(Edge: edge) {
-        if(!(Util.isNullOrUndefined(Edge.to) || Util.isNullOrUndefined(Edge.from) || Util.isNullOrUndefined(Edge.using)))
+        if(!(Util.isNullOrUndefined(Edge.to) || Util.isNullOrUndefined(Edge.from) || Util.isNullOrUndefined(Edge.rule)))
         {
-            Ninja.edge(Edge.to).from(Edge.from).using(Edge.using);
+            Ninja.edge(Edge.to).from(Edge.from).using(Edge.rule);
         }
         else
         {
-            console.log('Invalid edge ', Edge, ' requires "to", "from" and "using"')
+            console.log('Invalid edge ', Edge, ' requires "to", "from" and "rule"')
         }
     });
 
@@ -97,15 +106,19 @@ function generateNinjaBuild(EthssetConfig: config_desc)
             flatten: GlobEdge.flatten || false
         }
         console.log(GlobEdge, "::", GlobOptions);
-        var GlobResult: string[] = globule.findMapping(GlobEdge.pattern, GlobOptions);
 
+        var GlobResult: glob_mapping[] = globule.findMapping(GlobEdge.pattern, GlobOptions);
         console.log(GlobResult);
+        GlobResult.forEach(function(Result: glob_mapping) {
+            Ninja.edge(Result.dest).from(Result.src).using(GlobEdge.rule);
+        });
     });
 
-    Ninja.save('build.ninja');
+    Ninja.save('build.ninja', function() {
+        executeNinjaBuild(EthssetConfig.ninja.buildfile);
+    });
 }
 
-generateNinjaBuild(EthssetConfig);
 console.log(Ninja);
 
 
@@ -113,11 +126,17 @@ function executeNinjaBuild(BuildFilePath: string = 'build.ninja') {
     function puts(error, stdout, stderr) {
         console.log(stdout);
     }
-    exec(Util.format('ninja -f %s', BuildFilePath), puts);
+    if (IsDryMode)
+    {
+        exec(Util.format('ninja -n -f %s', BuildFilePath), puts);
+    }
+    else
+    {
+        exec(Util.format('ninja -f %s', BuildFilePath), puts);
+    }
 }
-executeNinjaBuild(EthssetConfig.ninja.buildfile);
 
-
+generateNinjaBuild(EthssetConfig);
 
 // Exports 
 exports.executeNinjaBuild = executeNinjaBuild;

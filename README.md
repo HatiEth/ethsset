@@ -1,7 +1,90 @@
-
 # ethsset
 
-Node.js+Ninja based asset pipeline.
+ethsset is a [node.js](https://nodejs.org/)+[Ninja](https://nodejs.org/) based Asset Pipeline.
+
+[TOC]
+
+## Usage
+
+ethsset requires an `ethsset.json` in its executed directory.
+If no `ethsset.json` exists ethsset will create an default one for you on first call.
+The `ethsset.json` has the following structure:
+
+    {
+        ninja?: {
+            version?: string;
+            buildpath?: string; | 'ethsset_build'
+            buildfile?: string; | 'build.ninja'
+        };
+        rules: rule[];
+        edges: edge[];
+        globedges?: glob_edge[];
+    }
+
+**Anything marked with `?` is an optional parameter. The default value if any is described with `| value`.**
+For example: You can specify the version of Ninja atleast required, but it is purely optional.
+
+### Ninja Configuration (ninja)
+
+	{
+    	version?: string,
+        buildpath?: string; | 'ethsset_build'
+        buildfile?: string; | 'build.ninja'
+    }
+
+`version` defines the version of **ninja** required by the executed system.
+`buildpath` defines in which folder the ninja will place its files relative to the executed directory.
+`buildfile` defines the output file name of ninja.
 
 
-Description will follow once it is more fledge out.
+
+### Rules (rules[ ])
+A rule contains of a name, a command and an optional description.
+The description is generated if none is provided in the pattern of `[<name>] <cmd>`
+
+	{
+    	name: string;
+    	cmd: string;
+    	desc?: string; | '[<name>] <cmd>'
+	}
+
+A simple copy rule would look like this:
+
+	rules: [
+        { name: 'copy', 'cmd': 'cp $in $out', 'desc': 'copy $in to $out'},
+        { name: 'copy-if-notexist', 'cmd': 'cp -n $in $out', 'desc': 'copy $in to $out'}
+    ]
+
+This uses ninja-build syntax so use `$in` for input file placement and `$out` for output file placement.
+
+### Edges (edges[ ])
+An edge provides a single task for **ethsset**.
+
+	{
+    	to: string;
+        from: string;
+        rule: string;
+    }
+
+For a given project structure
+
+	ethsset.json
+    bin/
+    src/
+    raw_assets/
+   		default.cfg
+
+A sample rule to copy the `default.cfg` to `bin/` if non-existend in `bin/` would be (according to the rules from above)
+
+	{ 'from': 'raw_assets/some_asset.ast', 'to': 'bin/default.cfg, 'rule': 'copy-if-notexist' }
+
+### GlobEdges (glob_edges[ ])
+GlobEdges are another way to define tasks. These task use the [globule](https://www.npmjs.com/package/globule) module and allow to match a single task to a specific file pattern.
+
+   	{
+        pattern: string;
+        srcBase?: string;
+        destBase?: string;
+        flatten?: boolean;
+        rule: string;
+    }
