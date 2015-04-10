@@ -4,6 +4,10 @@ ethsset is a [node.js](https://nodejs.org/)+[Ninja](https://nodejs.org/) based A
 
 [TOC]
 
+## Installation
+ethsset is best being installed globally if used for command-line.
+`ninja` has to be installed on your computer, either by npm or "normally" and be in your PATH.
+
 ## Usage
 
 ethsset requires an `ethsset.json` in its executed directory.
