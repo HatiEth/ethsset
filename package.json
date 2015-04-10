@@ -13,7 +13,13 @@
     "assets",
     "pipeline"
   ],
-  "author": "Sebastian Krause (http://flowerpickinggiants.de)",
+  "bugs": {
+      "url": "https://github.com/HatiEth/ethsset/issues"
+  },
+  "author": {
+     "name": "Sebastian Krause",
+     "url": "http://flowerpickinggiants.de"
+  },
   "license": "MIT",
   "dependencies": {
     "glob": "^5.0.3",
