@@ -24,6 +24,10 @@ The `ethsset.json` has the following structure:
 **Anything marked with `?` is an optional parameter. The default value if any is described with `| value`.**
 For example: You can specify the version of Ninja atleast required, but it is purely optional.
 
+### Testing ethsset
+
+You can test your configuration by using the `ethsset test` command. This will perform a dry run on ninja executing no actual tasks but providing the same output as if run normally.
+
 ### Ninja Configuration (ninja)
 
 	{
@@ -81,10 +85,20 @@ A sample rule to copy the `default.cfg` to `bin/` if non-existend in `bin/` woul
 ### GlobEdges (glob_edges[ ])
 GlobEdges are another way to define tasks. These task use the [globule](https://www.npmjs.com/package/globule) module and allow to match a single task to a specific file pattern.
 
-   	{
-        pattern: string;
-        srcBase?: string;
-        destBase?: string;
-        flatten?: boolean;
+	{
         rule: string;
+        pattern: string;
+        srcBase?: string; | ''
+        destBase?: string; | ''
+        flatten?: boolean; | false
+        ext?: string; | ''
     }
+
+Most of the parameters are named the same as in [globule documentation](https://www.npmjs.com/package/globule).
+`rule` is the name of the rule previously defined.
+
+An example globedge is:
+
+        { "pattern": "*.png", "srcBase": "raw_assets", "destBase": "assets", "rule": "copy", "ext": ".picture" }
+
+It copies all png-Files from  `./raw_assets/` to `assets` and changing their file-extension to `.picture`.

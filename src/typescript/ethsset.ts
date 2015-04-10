@@ -19,6 +19,7 @@ interface glob_edge {
     srcBase?: string;
     destBase?: string;
     flatten?: boolean;
+    ext?: string;
 }
 
 interface glob_mapping {
@@ -38,15 +39,14 @@ interface config_desc {
 }
 
 var IsDryMode: boolean = (process.argv.splice(2)[0] === 'test');
-if(IsDryMode)
-{
-    console.log("Running ethsset in test mode");
-}
 var ConfigFilePath: string = process.cwd() + '/ethsset.json';
 var fs = require('fs');
 var Util = require('util');
 var NinjaGen = require('ninja-build-gen');
 
+// ------------------------------------ Code ------------------------------------ // 
+
+console.log(Util.format("Running ethsset %s", IsDryMode ? "in test mode" : ""));
 if(!fs.existsSync(ConfigFilePath))
 {
     console.log('Creating default ethsset.json');
@@ -62,14 +62,11 @@ if(!fs.existsSync(ConfigFilePath))
 var EthssetConfig: config_desc = require(ConfigFilePath);
 
 var Ninja;
-if(EthssetConfig.ninja === void 0) 
-{
-    Ninja = NinjaGen(undefined, 'ethsset_build');
-}
-else
-{
-    Ninja = NinjaGen(EthssetConfig.ninja.version, EthssetConfig.ninja.buildpath || 'ethsset_build');
-}
+var NinjaBuildVersion: string = (EthssetConfig.ninja && EthssetConfig.ninja.version) || undefined;
+var NinjaBuildPath: string = (EthssetConfig.ninja && EthssetConfig.ninja.buildpath) || 'ethsset_build';
+var NinjaBuildFile: string = (EthssetConfig.ninja && EthssetConfig.ninja.buildfile) || 'build.ninja';
+
+var Ninja = NinjaGen(NinjaBuildVersion, NinjaBuildPath);
 
 var globule = require('globule');
 var sys = require('sys');
@@ -112,23 +109,31 @@ function generateNinjaBuild(EthssetConfig: config_desc)
         var GlobOptions = {
             srcBase: GlobEdge.srcBase || '',
             destBase: GlobEdge.destBase || '',
-            flatten: GlobEdge.flatten || false
-        }
-        console.log(GlobEdge, "::", GlobOptions);
-
+            flatten: GlobEdge.flatten || false,
+            ext: GlobEdge.ext || ''
+        };
         var GlobResult: glob_mapping[] = globule.findMapping(GlobEdge.pattern, GlobOptions);
-        console.log(GlobResult);
+
+        if(IsDryMode)
+        {
+            console.log(GlobEdge, "::", GlobOptions);
+            console.log(GlobResult);
+        }
+
         GlobResult.forEach(function(Result: glob_mapping) {
             Ninja.edge(Result.dest).from(Result.src).using(GlobEdge.rule);
         });
     });
 
-    Ninja.save('build.ninja', function() {
-        executeNinjaBuild(EthssetConfig.ninja.buildfile);
+    Ninja.save(NinjaBuildFile, function() {
+        executeNinjaBuild(NinjaBuildFile);
     });
 }
 
-console.log(Ninja);
+if(IsDryMode)
+{
+    console.log(Ninja);
+}
 
 
 function executeNinjaBuild(BuildFilePath: string = 'build.ninja') {

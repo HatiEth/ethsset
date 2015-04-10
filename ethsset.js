@@ -1,12 +1,11 @@
 /// <reference path="node.d.ts" />
 var IsDryMode = (process.argv.splice(2)[0] === 'test');
-if (IsDryMode) {
-    console.log("Running ethsset in test mode");
-}
 var ConfigFilePath = process.cwd() + '/ethsset.json';
 var fs = require('fs');
 var Util = require('util');
 var NinjaGen = require('ninja-build-gen');
+// ------------------------------------ Code ------------------------------------ // 
+console.log(Util.format("Running ethsset %s", IsDryMode ? "in test mode" : ""));
 if (!fs.existsSync(ConfigFilePath)) {
     console.log('Creating default ethsset.json');
     var Config = {
@@ -18,12 +17,10 @@ if (!fs.existsSync(ConfigFilePath)) {
 }
 var EthssetConfig = require(ConfigFilePath);
 var Ninja;
-if (EthssetConfig.ninja === void 0) {
-    Ninja = NinjaGen(undefined, 'ethsset_build');
-}
-else {
-    Ninja = NinjaGen(EthssetConfig.ninja.version, EthssetConfig.ninja.buildpath || 'ethsset_build');
-}
+var NinjaBuildVersion = (EthssetConfig.ninja && EthssetConfig.ninja.version) || undefined;
+var NinjaBuildPath = (EthssetConfig.ninja && EthssetConfig.ninja.buildpath) || 'ethsset_build';
+var NinjaBuildFile = (EthssetConfig.ninja && EthssetConfig.ninja.buildfile) || 'build.ninja';
+var Ninja = NinjaGen(NinjaBuildVersion, NinjaBuildPath);
 var globule = require('globule');
 var sys = require('sys');
 var exec = require('child_process').exec;
@@ -55,20 +52,25 @@ function generateNinjaBuild(EthssetConfig) {
         var GlobOptions = {
             srcBase: GlobEdge.srcBase || '',
             destBase: GlobEdge.destBase || '',
-            flatten: GlobEdge.flatten || false
+            flatten: GlobEdge.flatten || false,
+            ext: GlobEdge.ext || ''
         };
-        console.log(GlobEdge, "::", GlobOptions);
         var GlobResult = globule.findMapping(GlobEdge.pattern, GlobOptions);
-        console.log(GlobResult);
+        if (IsDryMode) {
+            console.log(GlobEdge, "::", GlobOptions);
+            console.log(GlobResult);
+        }
         GlobResult.forEach(function (Result) {
             Ninja.edge(Result.dest).from(Result.src).using(GlobEdge.rule);
         });
     });
-    Ninja.save('build.ninja', function () {
-        executeNinjaBuild(EthssetConfig.ninja.buildfile);
+    Ninja.save(NinjaBuildFile, function () {
+        executeNinjaBuild(NinjaBuildFile);
     });
 }
-console.log(Ninja);
+if (IsDryMode) {
+    console.log(Ninja);
+}
 function executeNinjaBuild(BuildFilePath) {
     if (BuildFilePath === void 0) { BuildFilePath = 'build.ninja'; }
     function puts(error, stdout, stderr) {
